@@ -1,0 +1,383 @@
+/* ===================================================
+   SISTEMA DE GESTIÓN DE RIESGOS - TEMA DARK LUX & GLASS
+   =================================================== */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #0d0d0d;
+    color: #e2e8f0;
+    overflow: hidden;
+}
+
+/* --- ENCABEZADO (HEADER) --- */
+header {
+    background: rgba(18, 18, 18, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.9rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+}
+
+header h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #f3e0aa;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#auth-controls button {
+    padding: 8px 18px;
+    background: linear-gradient(180deg, #383227 0%, #1f1b14 100%);
+    color: #d4af37;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+#auth-controls button:hover {
+    background: linear-gradient(180deg, #d4af37 0%, #aa8214 100%);
+    color: #0d0d0d;
+    border-color: #d4af37;
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
+}
+
+/* --- CONTENEDOR PRINCIPAL --- */
+.contenedor-principal {
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+    position: relative;
+    overflow: hidden;
+}
+
+/* --- PANEL LATERAL / DASHBOARD --- */
+.panel {
+    width: 340px;
+    background: rgba(18, 17, 16, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    overflow-y: auto;
+    z-index: 500;
+    box-shadow: 5px 0 25px rgba(0,0,0,0.5);
+}
+
+.panel h2, .panel h3 {
+    color: #f1f5f9;
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+/* --- TARJETAS DEL DASHBOARD --- */
+.tarjetas-resumen {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.tarjeta {
+    flex: 1;
+    padding: 12px 8px;
+    border-radius: 12px;
+    text-align: center;
+    background: rgba(30, 28, 26, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(8px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.tarjeta h3 {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.tarjeta span {
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.tarjeta.alto h3, .tarjeta.alto span { color: #f87171; }
+.tarjeta.medio h3, .tarjeta.medio span { color: #fbbf24; }
+.tarjeta.bajo h3, .tarjeta.bajo span { color: #4ade80; }
+
+.tarjeta.alto { border-color: rgba(248, 113, 113, 0.25); background: rgba(248, 113, 113, 0.08); }
+.tarjeta.medio { border-color: rgba(251, 191, 36, 0.25); background: rgba(251, 191, 36, 0.08); }
+.tarjeta.bajo { border-color: rgba(74, 222, 128, 0.25); background: rgba(74, 222, 128, 0.08); }
+
+/* --- SECCIÓN REPORTE DE RIESGO --- */
+.seccion-instrucciones {
+    background: rgba(28, 26, 23, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.seccion-instrucciones p {
+    font-size: 0.82rem;
+    color: #94a3b8;
+    margin-top: 6px;
+    line-height: 1.35;
+}
+
+#btn-modo-alerta {
+    width: 100%;
+    padding: 11px;
+    background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.88rem;
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    border-radius: 10px;
+    margin-top: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    transition: all 0.2s ease;
+}
+
+#btn-modo-alerta:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+}
+
+/* --- FORMULARIO DE CREACIÓN DE ALERTA --- */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: rgba(28, 26, 23, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 14px;
+}
+
+form label {
+    font-size: 0.78rem;
+    color: #a3937d;
+    font-weight: 500;
+}
+
+form input, form select, form textarea {
+    background: rgba(15, 15, 15, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 9px 12px;
+    color: #f1f5f9;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+form select option {
+    background: #181818;
+    color: #f1f5f9;
+}
+
+form input:focus, form select:focus, form textarea:focus {
+    border-color: rgba(212, 175, 55, 0.5);
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.15);
+}
+
+.btn-guardar {
+    background: linear-gradient(180deg, #16a34a 0%, #15803d 100%);
+    color: white;
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+    transition: all 0.2s ease;
+}
+
+.btn-guardar:hover { filter: brightness(1.15); }
+
+.btn-cancelar {
+    background: rgba(45, 45, 45, 0.8);
+    color: #cbd5e1;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-cancelar:hover { background: rgba(60, 60, 60, 0.9); }
+
+/* --- MAPA Y CONTROLES LEAFLET DARK --- */
+#mapa {
+    flex: 1;
+    height: 100%;
+    background: #111111;
+}
+
+/* Modificar los controles de zoom del mapa para el tema oscuro */
+.leaflet-control-zoom a {
+    background-color: rgba(22, 21, 19, 0.85) !important;
+    color: #d4af37 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(8px);
+}
+
+/* Estilos de la ventana desplegable (Popup) del Mapa */
+.leaflet-popup-content-wrapper, .leaflet-popup-tip {
+    background: rgba(20, 19, 18, 0.92) !important;
+    color: #f1f5f9 !important;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.6) !important;
+    backdrop-filter: blur(10px);
+    border-radius: 10px !important;
+}
+
+.leaflet-popup-content {
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+/* --- MODAL LOGIN (DARK LUX GLASS) --- */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at center, rgba(30, 25, 18, 0.85) 0%, rgba(8, 8, 8, 0.95) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    justify-content: center;
+    align-items: center;
+    z-index: 99999 !important;
+}
+
+.contenido-modal {
+    position: relative;
+    background: rgba(26, 24, 22, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 35px 30px;
+    width: 90%;
+    max-width: 360px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    z-index: 100000 !important;
+}
+
+.contenido-modal h2 {
+    color: #ffffff;
+    font-size: 1.5rem;
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: 22px;
+    letter-spacing: 0.5px;
+}
+
+.cerrar {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 24px;
+    color: #8c857b;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.cerrar:hover { color: #ffffff; }
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.input-group label {
+    color: #8c857b;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.input-group input {
+    background: rgba(40, 37, 33, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    padding: 11px 14px;
+    color: #f1f1f1;
+    font-size: 0.9rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.input-group input::placeholder { color: #5c564d; }
+
+.input-group input:focus {
+    border-color: rgba(212, 175, 55, 0.5);
+    background: rgba(50, 46, 40, 0.9);
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.2);
+}
+
+/* BOTÓN DORADO METÁLICO */
+.btn-gold {
+    width: 100%;
+    margin-top: 8px;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #f3e0aa 0%, #d4af37 50%, #aa8214 100%);
+    color: #1a1408;
+    font-size: 0.92rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.btn-gold:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.btn-gold:active { transform: translateY(1px); }
+
+/* Adaptación Responsiva para Celulares */
+@media (max-width: 768px) {
+    .contenedor-principal {
+        flex-direction: column-reverse;
+    }
+    .panel {
+        width: 100%;
+        height: 45%;
+        border-right: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    #mapa {
+        height: 55%;
+    }
+}

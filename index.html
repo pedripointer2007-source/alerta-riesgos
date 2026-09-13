@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión de Riesgos</title>
+    <!-- Leaflet CSS (Mapa) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <header>
+        <h1>⚠️ Sistema de Gestión de Riesgos</h1>
+        <div id="auth-controls">
+            <button id="btn-login-modal" onclick="mostrarModalLogin()">Acceso Admin</button>
+            <button id="btn-logout" onclick="cerrarSesion()" style="display:none;">Cerrar Sesión Admin</button>
+        </div>
+    </header>
+
+    <main class="contenedor-principal">
+        <!-- Panel Lateral / Dashboard -->
+        <aside class="panel">
+            <h2>📊 Dashboard de Alertas</h2>
+            <div class="tarjetas-resumen">
+                <div class="tarjeta alto">
+                    <h3>Alto</h3>
+                    <span id="cant-alto">0</span>
+                </div>
+                <div class="tarjeta medio">
+                    <h3>Medio</h3>
+                    <span id="cant-medio">0</span>
+                </div>
+                <div class="tarjeta bajo">
+                    <h3>Bajo</h3>
+                    <span id="cant-bajo">0</span>
+                </div>
+            </div>
+
+            <div class="seccion-instrucciones">
+                <h3>📍 Reportar Nuevo Riesgo</h3>
+                <p>Haz clic en cualquier punto del mapa para fijar la ubicación del evento:</p>
+                <button id="btn-modo-alerta" onclick="activarModoAlerta()">+ Crear Alerta</button>
+            </div>
+
+            <!-- Formulario de Alerta -->
+            <form id="form-alerta" style="display: none;" onsubmit="guardarAlerta(event)">
+                <p><small>Coordenadas:</small> <span id="coordenadas-lbl" style="color: #d4af37; font-weight: 600;">Ninguna</span></p>
+                
+                <label>Tipo de Riesgo:</label>
+                <select id="tipo-riesgo" required>
+                    <option value="Accidente">Accidente Vial</option>
+                    <option value="Inundación">Inundación / Lluvia</option>
+                    <option value="Derrumbe">Derrumbe / Obstrucción</option>
+                    <option value="Seguridad">Zona Insegura</option>
+                    <option value="Otro">Otro</option>
+                </select>
+
+                <label>Nivel de Riesgo (Color):</label>
+                <select id="nivel-riesgo" required>
+                    <option value="Alto">Alto (Rojo)</option>
+                    <option value="Medio">Medio (Amarillo)</option>
+                    <option value="Bajo">Bajo (Verde)</option>
+                </select>
+
+                <label>Descripción:</label>
+                <textarea id="descripcion-riesgo" rows="3" placeholder="Detalles de la alerta..."></textarea>
+
+                <button type="submit" class="btn-guardar">Enviar Alerta</button>
+                <button type="button" onclick="cancelarAlerta()" class="btn-cancelar">Cancelar</button>
+            </form>
+        </aside>
+
+        <!-- Mapa Interactivo -->
+        <section id="mapa"></section>
+    </main>
+
+    <!-- Modal de Login para Admin (Estilo Dark Lux / Sin Lámpara) -->
+    <div id="modal-login" class="modal">
+        <div class="contenido-modal">
+            <span class="cerrar" onclick="cerrarModalLogin()">&times;</span>
+            <h2>Welcome</h2>
+            <form onsubmit="iniciarSesionAdmin(event)">
+                <div class="input-group">
+                    <label>Username / Email</label>
+                    <input type="email" id="email-admin" placeholder="Your name / Email" required>
+                </div>
+                
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="pass-admin" placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" class="btn-gold">Sign In</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
