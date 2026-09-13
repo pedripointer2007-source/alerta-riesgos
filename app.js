@@ -7,11 +7,14 @@ let mapa;
 let marcadorTemporal = null;
 let coordsSeleccionadas = null;
 let esAdmin = false;
+let capaAlertas;
+const TAMANO_BLOQUE_IMPORTACION = 100;
 
 // Inicialización de Mapa (Centrado por defecto)
 window.onload = function () {
     // Inicializar mapa centrado en coordenadas generales (ej: Managua/León o tu ciudad)
     mapa = L.map('mapa').setView([12.435, -86.878], 13);
+    capaAlertas = L.layerGroup().addTo(mapa);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap'
@@ -36,6 +39,8 @@ async function cargarAlertas() {
         return;
     }
 
+    capaAlertas.clearLayers();
+
     // Actualizar Contadores del Dashboard
     let alto = 0, medio = 0, bajo = 0;
 
@@ -55,7 +60,7 @@ async function cargarAlertas() {
             fillColor: colorHex,
             fillOpacity: 0.7,
             radius: 12
-        }).addTo(mapa);
+        }).addTo(capaAlertas);
 
         let contenidoPopup = `
             <b>Tipo:</b> ${alerta.tipo}<br>
@@ -151,8 +156,129 @@ async function comprobarSesion() {
     if (session) {
         esAdmin = true;
         document.getElementById('btn-login-modal').style.display = 'none';
+        document.getElementById('btn-subir-datos').style.display = 'inline-block';
         document.getElementById('btn-logout').style.display = 'inline-block';
     }
+}
+
+function abrirSelectorExcel() {
+    if (!esAdmin) {
+        alert('Debes iniciar sesión como administrador.');
+        return;
+    }
+    document.getElementById('input-excel').click();
+}
+
+async function procesarExcel(evento) {
+    const archivo = evento.target.files[0];
+    const estado = document.getElementById('estado-carga');
+    evento.target.value = '';
+    if (!archivo || !esAdmin) return;
+
+    estado.textContent = 'Leyendo archivo...';
+    try {
+        const datos = await archivo.arrayBuffer();
+        const libro = XLSX.read(datos, { type: 'array', cellDates: true });
+        const nombreHoja = libro.SheetNames[0];
+        const filas = XLSX.utils.sheet_to_json(libro.Sheets[nombreHoja], { defval: null });
+        const alertas = filas.map(convertirFilaAAlerta).filter(Boolean);
+
+        if (!alertas.length) {
+            throw new Error('No se encontraron filas con coordenadas válidas. Usa latitud/longitud o COORDENADAS_X/COORDENADAS_Y.');
+        }
+
+        for (let inicio = 0; inicio < alertas.length; inicio += TAMANO_BLOQUE_IMPORTACION) {
+            const bloque = alertas.slice(inicio, inicio + TAMANO_BLOQUE_IMPORTACION);
+            const { error } = await supabaseClient.from('alertas').insert(bloque);
+            if (error) throw error;
+            estado.textContent = `Cargando datos: ${Math.min(inicio + bloque.length, alertas.length)} de ${alertas.length}`;
+        }
+
+        estado.textContent = `Se agregaron ${alertas.length} alertas correctamente.`;
+        alert(`Se agregaron ${alertas.length} registros al mapa y al dashboard.`);
+        await cargarAlertas();
+    } catch (error) {
+        console.error('Error al importar Excel:', error);
+        estado.textContent = 'No se pudo importar el archivo.';
+        alert(`Error al importar el Excel: ${error.message}`);
+    }
+}
+
+function convertirFilaAAlerta(fila) {
+    const columnas = Object.keys(fila).reduce((resultado, columna) => {
+        resultado[normalizarColumna(columna)] = fila[columna];
+        return resultado;
+    }, {});
+
+    let latitud = obtenerNumero(columnas, ['latitud', 'lat', 'latitude']);
+    let longitud = obtenerNumero(columnas, ['longitud', 'lon', 'lng', 'longitude']);
+
+    if (!Number.isFinite(latitud) || !Number.isFinite(longitud) || Math.abs(latitud) > 90 || Math.abs(longitud) > 180) {
+        const este = obtenerNumero(columnas, ['coordenadasx', 'x', 'este', 'easting']);
+        const norte = obtenerNumero(columnas, ['coordenadasy', 'y', 'norte', 'northing']);
+        if (!Number.isFinite(este) || !Number.isFinite(norte)) return null;
+        const coordenadas = convertirUtmALatLon(este, norte, 16);
+        latitud = coordenadas.latitud;
+        longitud = coordenadas.longitud;
+    }
+
+    const nivelOriginal = obtenerValor(columnas, ['nivelriesgo', 'nivel', 'riesgo', 'gradoderiesgoqueseviveensucomunidadanteinundaciones']);
+    const nivelRiesgo = convertirNivelRiesgo(nivelOriginal);
+    const tipo = obtenerValor(columnas, ['tipo', 'tiporiesgo', 'evento']) || 'Inundación';
+    const descripcion = obtenerValor(columnas, ['descripcion', 'detalle', 'observaciones', 'podriadefinirensuspropiaspalabrasqueesinundacion']) || 'Registro importado desde Excel';
+    return { tipo, nivel_riesgo: nivelRiesgo, descripcion: String(descripcion), latitud, longitud };
+}
+
+function normalizarColumna(valor) {
+    return String(valor).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+}
+
+function obtenerValor(columnas, nombres) {
+    for (const nombre of nombres) {
+        if (columnas[nombre] !== null && columnas[nombre] !== undefined && columnas[nombre] !== '') return columnas[nombre];
+    }
+    return null;
+}
+
+function obtenerNumero(columnas, nombres) {
+    const valor = obtenerValor(columnas, nombres);
+    if (typeof valor === 'number') return valor;
+    if (typeof valor !== 'string') return Number.NaN;
+    const numero = Number(valor.trim().replace(',', '.'));
+    return Number.isFinite(numero) ? numero : Number.NaN;
+}
+
+function convertirNivelRiesgo(valor) {
+    const texto = String(valor || '').trim().toLowerCase();
+    if (texto.includes('alto')) return 'Alto';
+    if (texto.includes('medio') || texto.includes('moderado')) return 'Medio';
+    if (texto.includes('bajo')) return 'Bajo';
+    const numero = Number(texto.replace(',', '.'));
+    if (Number.isFinite(numero)) {
+        if (numero >= 5) return 'Alto';
+        if (numero >= 3) return 'Medio';
+    }
+    return 'Bajo';
+}
+
+function convertirUtmALatLon(este, norte, zona) {
+    const semiejeMayor = 6378137;
+    const excentricidad = 0.0818191908426;
+    const escala = 0.9996;
+    const x = este - 500000;
+    const ePrimaCuadrada = excentricidad ** 2 / (1 - excentricidad ** 2);
+    const meridianoCentral = ((zona - 1) * 6 - 180 + 3) * Math.PI / 180;
+    const arcoMeridiano = norte / escala;
+    const pie = arcoMeridiano / (semiejeMayor * (1 - excentricidad ** 2 / 4 - 3 * excentricidad ** 4 / 64 - 5 * excentricidad ** 6 / 256));
+    const senoPie = Math.sin(pie);
+    const cosenoPie = Math.cos(pie);
+    const radioCurvatura = semiejeMayor / Math.sqrt(1 - excentricidad ** 2 * senoPie ** 2);
+    const radioMeridiano = semiejeMayor * (1 - excentricidad ** 2) / (1 - excentricidad ** 2 * senoPie ** 2) ** 1.5;
+    const tangentePie = Math.tan(pie);
+    const d = x / (radioCurvatura * escala);
+    const latitud = pie - (radioCurvatura * tangentePie / radioMeridiano) * (d ** 2 / 2 - (5 + 3 * tangentePie ** 2 + 10 * ePrimaCuadrada * cosenoPie ** 2 - 4 * ePrimaCuadrada ** 2 - 9 * excentricidad ** 2) * d ** 4 / 24);
+    const longitud = meridianoCentral + (d - (1 + 2 * tangentePie ** 2 + ePrimaCuadrada * cosenoPie ** 2) * d ** 3 / 6) / cosenoPie;
+    return { latitud: latitud * 180 / Math.PI, longitud: longitud * 180 / Math.PI };
 }
 
 async function cerrarSesion() {

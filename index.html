@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="style.css">
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -16,7 +17,9 @@
         <h1>⚠️ Sistema de Gestión de Riesgos</h1>
         <div id="auth-controls">
             <button id="btn-login-modal" onclick="mostrarModalLogin()">Acceso Admin</button>
+            <button id="btn-subir-datos" onclick="abrirSelectorExcel()" style="display:none;">Subir datos</button>
             <button id="btn-logout" onclick="cerrarSesion()" style="display:none;">Cerrar Sesión Admin</button>
+            <input id="input-excel" type="file" accept=".xlsx,.xls,.csv" onchange="procesarExcel(event)" hidden>
         </div>
     </header>
 
@@ -38,6 +41,7 @@
                     <span id="cant-bajo">0</span>
                 </div>
             </div>
+            <p id="estado-carga" class="estado-carga" role="status"></p>
 
             <div class="seccion-instrucciones">
                 <h3>📍 Reportar Nuevo Riesgo</h3>

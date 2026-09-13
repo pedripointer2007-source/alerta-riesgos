@@ -61,6 +61,17 @@ header h1 {
     box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
 }
 
+#btn-subir-datos {
+    background: linear-gradient(180deg, #166534 0%, #14532d 100%) !important;
+    color: #bbf7d0 !important;
+    border-color: rgba(74, 222, 128, 0.4) !important;
+}
+
+#btn-subir-datos:hover {
+    background: linear-gradient(180deg, #22c55e 0%, #15803d 100%) !important;
+    color: #ffffff !important;
+}
+
 /* --- CONTENEDOR PRINCIPAL --- */
 .contenedor-principal {
     display: flex;
@@ -130,6 +141,13 @@ header h1 {
 .tarjeta.alto { border-color: rgba(248, 113, 113, 0.25); background: rgba(248, 113, 113, 0.08); }
 .tarjeta.medio { border-color: rgba(251, 191, 36, 0.25); background: rgba(251, 191, 36, 0.08); }
 .tarjeta.bajo { border-color: rgba(74, 222, 128, 0.25); background: rgba(74, 222, 128, 0.08); }
+
+.estado-carga {
+    min-height: 1.1rem;
+    color: #a3937d;
+    font-size: 0.75rem;
+    line-height: 1.35;
+}
 
 /* --- SECCIÓN REPORTE DE RIESGO --- */
 .seccion-instrucciones {
